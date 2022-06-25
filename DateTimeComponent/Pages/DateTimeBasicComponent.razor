@@ -1,0 +1,40 @@
+﻿
+@implements IDisposable
+
+@using System.Timers
+
+<div class="datetime">
+  <div class="time">@DateTime.Now.ToShortTimeString()</div>
+  <div class="date">@DateTime.Now.ToLongDateString()</div>
+</div>
+
+@code{
+
+    private Timer? timer;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            timer = new Timer();
+            timer.Interval = 500;
+            timer.Elapsed += OnTimerInterval!;
+            timer.AutoReset = true;
+            // Start the timer
+            timer.Enabled = true;
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    private void OnTimerInterval(object sender, ElapsedEventArgs e)
+    {
+        InvokeAsync(() => StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        // During pre-render, this component is rendered without calling OnAfterRender and then immediately disposed
+        // this mean timer will be null so we have to check for null or use the Null-conditional operator ?
+        timer?.Dispose();
+    }
+}
